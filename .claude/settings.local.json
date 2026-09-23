@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "PowerShell(Get-Command uv -ErrorAction SilentlyContinue)",
-      "PowerShell(uv --version)",
-      "PowerShell(uv python list --only-installed)"
-    ]
-  }
-}

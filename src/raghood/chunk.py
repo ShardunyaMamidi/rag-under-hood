@@ -28,6 +28,19 @@ def heading_positions(text: str) -> list[tuple[int, str]]:
     return heads
 
 
+def section_spans(text: str) -> list[tuple[int, int, str]]:
+    """(start, end, title) character range of each section: its heading to the next one."""
+    heads = heading_positions(text)
+    return [(pos, heads[i + 1][0] if i + 1 < len(heads) else len(text), title)
+            for i, (pos, title) in enumerate(heads)]
+
+
+def overlap_words(text: str, a0: int, a1: int, b0: int, b1: int) -> int:
+    """How many words two character ranges of `text` share."""
+    lo, hi = max(a0, b0), min(a1, b1)
+    return len(WORD.findall(text[lo:hi])) if lo < hi else 0
+
+
 def chunk_page(text: str, size: int = 200, overlap: int = 20) -> list[dict]:
     """Split one page into windows of `size` words sharing `overlap` words with the next.
 
@@ -35,7 +48,11 @@ def chunk_page(text: str, size: int = 200, overlap: int = 20) -> list[dict]:
     previous chunk instead, so a page never ends in a tiny near-duplicate chunk (a chunk
     can therefore hold up to `size + overlap - 1` words).
 
-    Returns dicts with the word range, character range, section title, n_words and text.
+    Returns dicts with the word range, character range, n_words, text, and section info:
+    `section` is the heading covering most of the chunk's words and `sections` lists every
+    heading the chunk touches. Fixed-size windows cross heading boundaries constantly
+    (~69% of chunks at size 200), so labelling by the heading at the chunk's *start* is
+    misleading -- e.g. a chunk starting in "APIs with JSON" may be mostly about "Sessions".
     """
     if overlap >= size:
         raise ValueError(f"overlap ({overlap}) must be smaller than size ({size})")
@@ -57,13 +74,19 @@ def chunk_page(text: str, size: int = 200, overlap: int = 20) -> list[dict]:
         spans[-2][1] = spans[-1][1]
         spans.pop()
 
-    heads = heading_positions(text)
+    secs = section_spans(text)
     chunks = []
     for s, e in spans:
         c0, c1 = words[s].start(), words[e - 1].end()
-        section = next((title for pos, title in reversed(heads) if pos <= c0), None)
-        chunks.append({"start_word": s, "end_word": e, "n_words": e - s,
-                       "char_start": c0, "char_end": c1, "section": section, "text": text[c0:c1]})
+        touched = [(title, overlap_words(text, c0, c1, s0, s1)) for s0, s1, title in secs]
+        touched = [(title, n) for title, n in touched if n > 0]
+        chunks.append({
+            "start_word": s, "end_word": e, "n_words": e - s,
+            "char_start": c0, "char_end": c1,
+            "section": max(touched, key=lambda t: t[1])[0] if touched else None,
+            "sections": [title for title, _ in touched],
+            "text": text[c0:c1],
+        })
     return chunks
 
 

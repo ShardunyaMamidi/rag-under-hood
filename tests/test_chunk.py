@@ -66,11 +66,32 @@ def test_original_whitespace_is_preserved():
     assert "\n    return 1" in chunk["text"], "code indentation was flattened"
 
 
-def test_section_label_is_nearest_heading_above():
+def test_section_label_for_chunks_inside_one_section():
     text = "# First\n\n" + " ".join(f"a{i}" for i in range(250)) + "\n\n## Second\n\n" + " ".join(f"b{i}" for i in range(250))
     chunks = chunk_page(text, size=200, overlap=20)
     assert chunks[0]["section"] == "First"
+    assert chunks[0]["sections"] == ["First"]
     assert chunks[-1]["section"] == "Second"
+
+
+def test_section_label_is_the_majority_section_not_the_starting_one():
+    """A chunk starting near the end of section A but mostly covering B is labelled B.
+
+    Real case: a quickstart chunk began in "APIs with JSON" but contained the whole
+    "Sessions" explanation. Start-based labelling made correct retrievals score as misses.
+    """
+    text = "# Alpha\n\n" + " ".join(f"a{i}" for i in range(30)) + "\n\n## Beta\n\n" + " ".join(f"b{i}" for i in range(300))
+    first = chunk_page(text, size=200, overlap=20)[0]
+    assert first["section"] == "Beta", "label should follow the bulk of the text"
+    assert first["sections"] == ["Alpha", "Beta"], "both sections must still be recorded"
+
+
+def test_spanned_sections_are_recorded_in_order():
+    text = ("# One\n\n" + " ".join(f"a{i}" for i in range(20))
+            + "\n\n## Two\n\n" + " ".join(f"b{i}" for i in range(20))
+            + "\n\n## Three\n\n" + " ".join(f"c{i}" for i in range(20)))
+    chunk = chunk_page(text, size=200, overlap=20)[0]
+    assert chunk["sections"] == ["One", "Two", "Three"]
 
 
 def test_headings_inside_code_fences_are_ignored():

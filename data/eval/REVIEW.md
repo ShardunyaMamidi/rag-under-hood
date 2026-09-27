@@ -1,16 +1,16 @@
 # Evaluation set — for review
 
-27 questions, 73 labels. Every `(page, section)` pair is
-verified to be a real heading in the cleaned corpus.
+72 questions, 188 labels, covering 57 of 71 pages.
+Every `(page, section)` pair is verified to be a real heading in the cleaned corpus.
 
 **How to review:** for each question ask (a) would a Flask user actually ask this, and (b) is any
-page missing from *Relevant*? A missing label counts as a false miss later and makes every variant
-look worse than it is. Mark anything to reword, drop, or relabel.
+page missing from *Also*? A missing label counts as a false miss and makes every variant look
+worse than it is.
 
-`Primary` is the one section a reader most wants (used for a stricter P@1). `Relevant` are all
-sections that genuinely answer it — the Flask docs cover much of this twice (tutorial vs reference).
+Scoring never compares section names — a gold section is a character range on its page and a
+retrieved chunk is a hit when it shares >=50 words with that range. See `src/raghood/evaluate.py`.
 
-## conceptual (4)
+## conceptual (8)
 
 **1. What is the application context in Flask?**  `easy`
 - Primary: `appcontext` > The Application Context
@@ -26,7 +26,24 @@ sections that genuinely answer it — the Flask docs cover much of this twice (t
 - Primary: `config` > Instance Folders
 - Also: `tutorial/factory` > The Application Factory
 
-## identifier (8)
+**31. What happens step by step when a request comes in?**  `medium`
+- Primary: `lifecycle` > How a Request is Handled
+- Also: `lifecycle` > Serving the Application
+
+**59. Which production server should I choose to deploy Flask?**  `medium`
+- Primary: `deploying/index` > Self-Hosted Options
+- Also: `deploying/index` > Deploying to Production, `deploying/index` > Hosting Platforms
+
+**67. Why is request a proxy object and when does that matter?**  `hard`
+- Primary: `reqcontext` > Notes On Proxies
+- Also: `appcontext` > Storing Data
+- Note: LocalProxy / _get_current_object
+
+**68. Can I use async view functions in Flask and is it faster?**  `medium`
+- Primary: `async-await` > Using `async` and `await`
+- Also: `async-await` > Performance, `async-await` > When to use Quart instead
+
+## identifier (10)
 
 **6. What does url_for do and how do I build URLs with it?**  `medium`
 - Primary: `quickstart` > URL Building
@@ -61,7 +78,15 @@ sections that genuinely answer it — the Flask docs cover much of this twice (t
 - Primary: `appcontext` > Storing Data
 - Also: `api` > Application Globals, `quickstart` > Context Locals
 
-## howto (11)
+**42. How do I write a login_required decorator for my views?**  `medium`
+- Primary: `patterns/viewdecorators` > Login Required Decorator
+- Also: `patterns/viewdecorators` > View Decorators, `tutorial/views` > Require Authentication in Other Views
+
+**45. How do I register a callback to run after this particular request?**  `hard`
+- Primary: `patterns/deferredcallbacks` > Deferred Request Callbacks
+- Note: after_this_request, but asked without naming it
+
+## howto (46)
 
 **14. How do I register a blueprint on an application?**  `medium`
 - Primary: `blueprints` > Registering Blueprints
@@ -109,10 +134,160 @@ sections that genuinely answer it — the Flask docs cover much of this twice (t
 - Primary: `templating` > Controlling Autoescaping
 - Also: `templating` > Jinja Setup
 
-## security (1)
+**28. How do I write my own Flask extension with an init_app method?**  `medium`
+- Primary: `extensiondev` > The Extension Class and Initialization
+- Also: `extensiondev` > Flask Extension Development, `extensiondev` > Adding Behavior
+
+**29. What should I name my Flask extension package?**  `easy`
+- Primary: `extensiondev` > Naming
+
+**30. Where do I find Flask extensions and how do I install one?**  `easy`
+- Primary: `extensions` > Finding Extensions
+- Also: `extensions` > Extensions, `extensions` > Using Extensions, `quickstart` > Using Flask Extensions
+
+**32. How do I add WSGI middleware to a Flask app?**  `medium`
+- Primary: `lifecycle` > Middleware
+- Also: `quickstart` > Hooking in WSGI Middleware
+
+**33. How do I organise a large application as a Python package?**  `medium`
+- Primary: `patterns/packages` > Simple Packages
+- Also: `patterns/packages` > Large Applications as Packages, `patterns/packages` > Working with Blueprints
+
+**34. How do I serve two separate Flask applications on different subdomains?**  `medium`
+- Primary: `patterns/appdispatch` > Dispatch by Subdomain
+- Also: `patterns/appdispatch` > Combining Applications, `patterns/appdispatch` > Dispatch by Path
+
+**35. How can I avoid importing every view module at startup?**  `hard`
+- Primary: `patterns/lazyloading` > Converting to Centralized URL Map
+- Also: `patterns/lazyloading` > Lazily Loading Views, `patterns/lazyloading` > Loading Late
+- Note: phrased as the motivation, never using the word 'lazy'
+
+**36. How do I make a base template that child templates extend?**  `medium`
+- Primary: `patterns/templateinheritance` > Base Template
+- Also: `patterns/templateinheritance` > Template Inheritance, `patterns/templateinheritance` > Child Template, `tutorial/templates` > The Base Layout
+
+**37. How do I return JSON from a view function?**  `hard`
+- Primary: `patterns/javascript` > Return JSON from Views
+- Also: `quickstart` > APIs with JSON, `quickstart` > About Responses
+- Note: jsonify appears in 13 sections; errorhandling and views discuss it for other purposes
+
+**38. How do I read JSON that was POSTed to a view?**  `medium`
+- Primary: `patterns/javascript` > Receiving JSON in Views
+
+**39. How do I call a Flask endpoint from JavaScript with fetch?**  `medium`
+- Primary: `patterns/javascript` > Making a Request with `fetch`
+- Also: `patterns/javascript` > JavaScript, `fetch`, and JSON, `patterns/javascript` > Generating URLs
+
+**40. How do I add a context processor so a variable is available in all templates?**  `easy`
+- Primary: `templating` > Context Processors
+- Also: `templating` > Standard Context
+
+**41. How do I validate a form with WTForms?**  `easy`
+- Primary: `patterns/wtforms` > In the View
+- Also: `patterns/wtforms` > Form Validation with WTForms, `patterns/wtforms` > The Forms, `patterns/wtforms` > Forms in Templates
+
+**43. How do I subscribe to a Flask signal?**  `medium`
+- Primary: `signals` > Subscribing to Signals
+- Also: `signals` > Decorator Based Signal Subscriptions, `signals` > Core Signals
+
+**44. How do I create and send my own custom signal?**  `medium`
+- Primary: `signals` > Creating Signals
+- Also: `signals` > Sending Signals
+
+**46. How do I strip a language code prefix from every URL automatically?**  `hard`
+- Primary: `patterns/urlprocessors` > Internationalized Application URLs
+- Also: `patterns/urlprocessors` > Using URL Processors, `patterns/urlprocessors` > Internationalized Blueprint URLs
+- Note: url_value_preprocessor / url_defaults, described by effect
+
+**47. How do I support PUT and DELETE from a client that only sends POST?**  `hard`
+- Primary: `patterns/methodoverrides` > Adding HTTP Method Overrides
+
+**48. How do I verify a request body checksum?**  `easy`
+- Primary: `patterns/requestchecksum` > Request Content Checksums
+
+**49. How do I use SQLAlchemy with Flask?**  `medium`
+- Primary: `patterns/sqlalchemy` > Flask-SQLAlchemy Extension
+- Also: `patterns/sqlalchemy` > SQLAlchemy in Flask, `patterns/sqlalchemy` > Declarative
+
+**50. How do I use MongoDB with Flask?**  `easy`
+- Primary: `patterns/mongoengine` > MongoDB with MongoEngine
+- Also: `patterns/mongoengine` > Configuration, `patterns/mongoengine` > Mapping Documents
+
+**51. How do I email myself when the application raises an error?**  `easy`
+- Primary: `logging` > Email Errors to Admins
+
+**52. How do I configure logging for a Flask app?**  `medium`
+- Primary: `logging` > Basic Configuration
+- Also: `logging` > Logging, `logging` > Default Configuration, `logging` > Removing the Default Handler
+
+**53. How do I include the request URL in my log messages?**  `medium`
+- Primary: `logging` > Injecting Request Information
+
+**54. How do I use a debugger like pdb or my IDE with Flask?**  `medium`
+- Primary: `debugging` > External Debuggers
+- Also: `debugging` > Debugging Application Errors, `debugging` > The Built-In Debugger
+
+**55. I get 'Address already in use' when starting the server. What do I do?**  `easy`
+- Primary: `server` > Address already in use
+
+**56. How do I open a shell with an application context loaded?**  `medium`
+- Primary: `shell` > Working with the Shell
+- Also: `shell` > Command Line Interface, `shell` > Creating a Request Context, `cli` > Open a Shell
+
+**57. Which Python version does Flask need and what does it install?**  `easy`
+- Primary: `installation` > Python Version
+- Also: `installation` > Dependencies, `installation` > Install Flask
+
+**58. How do I create and activate a virtual environment for a Flask project?**  `easy`
+- Primary: `installation` > Virtual environments
+- Also: `installation` > Create an environment, `installation` > Activate the environment
+
+**60. How do I deploy Flask with uWSGI?**  `easy`
+- Primary: `deploying/uwsgi` > Running
+- Also: `deploying/uwsgi` > uWSGI, `deploying/uwsgi` > Installing, `deploying/uwsgi` > Binding Externally
+
+**61. How do I put nginx in front of my Flask application?**  `medium`
+- Primary: `deploying/nginx` > Configuration
+- Also: `deploying/nginx` > nginx, `deploying/nginx` > Domain Name
+
+**62. How do I make my project pip-installable with a pyproject.toml?**  `medium`
+- Primary: `tutorial/install` > Describe the Project
+- Also: `tutorial/install` > Make the Project Installable, `tutorial/install` > Install the Project
+
+**69. How do I stream a large response instead of building it in memory?**  `medium`
+- Primary: `patterns/streaming` > Basic Usage
+- Also: `patterns/streaming` > Streaming Contents, `patterns/streaming` > Streaming from Templates, `templating` > Streaming
+
+**70. How do I serve a favicon?**  `easy`
+- Primary: `patterns/favicon` > Adding a favicon
+
+**71. How do I cache an expensive view result?**  `medium`
+- Primary: `patterns/caching` > Caching
+- Also: `patterns/viewdecorators` > Caching Decorator
+
+**72. How do I reference static files like CSS from a template?**  `medium`
+- Primary: `quickstart` > Static Files
+- Also: `tutorial/static` > Static Files, `blueprints` > Static Files
+
+## security (5)
 
 **25. Does Flask protect against CSRF attacks by default?**  `easy`
 - Primary: `web-security` > Cross-Site Request Forgery (CSRF)
+
+**63. How does Flask protect against XSS and where does it not?**  `medium`
+- Primary: `web-security` > Cross-Site Scripting (XSS)
+- Also: `quickstart` > HTML Escaping
+
+**64. Which HTTP security headers should I set?**  `medium`
+- Primary: `web-security` > Security Headers
+- Also: `web-security` > HTTP Strict Transport Security (HSTS), `web-security` > Content Security Policy (CSP), `web-security` > X-Content-Type-Options, `web-security` > X-Frame-Options
+
+**65. How do I stop my site being shown inside someone else's iframe?**  `hard`
+- Primary: `web-security` > X-Frame-Options
+- Note: clickjacking, described by symptom rather than header name
+
+**66. Is it safe to return a JSON array from an API endpoint?**  `hard`
+- Primary: `web-security` > JSON Security
 
 ## multihop (3)
 

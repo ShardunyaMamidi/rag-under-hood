@@ -90,8 +90,8 @@ def test_recall_counts_distinct_gold_sections(fixture):
 
 
 def test_summarise_averages_and_counts_misses(fixture):
-    rows = [{"P@1": 1.0, "R@1": 1.0, "MRR": 1.0, "first_hit_rank": 1},
-            {"P@1": 0.0, "R@1": 0.0, "MRR": 0.0, "first_hit_rank": None}]
+    rows = [{"S@1": 1.0, "P@1": 1.0, "R@1": 1.0, "MRR": 1.0, "first_hit_rank": 1},
+            {"S@1": 0.0, "P@1": 0.0, "R@1": 0.0, "MRR": 0.0, "first_hit_rank": None}]
     out = summarise(rows, ks=(1,))
-    assert out["P@1"] == 0.5 and out["MRR"] == 0.5
+    assert out["S@1"] == 0.5 and out["P@1"] == 0.5 and out["MRR"] == 0.5
     assert out["n_questions"] == 2 and out["n_missed"] == 1

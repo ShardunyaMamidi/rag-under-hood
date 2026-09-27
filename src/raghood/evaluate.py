@@ -63,11 +63,18 @@ def evaluate_question(question: dict, retrieved: list[dict], section_index: dict
     gold = question["relevant"]
     hits = [is_hit(c, gold, section_index, page_texts, min_words) for c in retrieved]
 
+    n_gold = len({g["section"] for g in gold})
     row = {"id": question["id"], "question": question["question"],
-           "type": question.get("type"), "difficulty": question.get("difficulty")}
+           "type": question.get("type"), "difficulty": question.get("difficulty"),
+           "n_gold": n_gold}
     for k in ks:
-        row[f"P@{k}"] = sum(h is not None for h in hits[:k]) / k
-        row[f"R@{k}"] = len({h for h in hits[:k] if h}) / len({g["section"] for g in gold})
+        n_hit = sum(h is not None for h in hits[:k])
+        row[f"P@{k}"] = n_hit / k
+        row[f"R@{k}"] = len({h for h in hits[:k] if h}) / n_gold
+        # at least one relevant chunk in the top k: the metric that matters for RAG, since
+        # the LLM only needs one good passage in its context. Prefer this and R@k over P@k:
+        # P@k is ceiling-limited by n_gold/k, so it is not comparable across questions.
+        row[f"S@{k}"] = float(n_hit > 0)
     first = next((i for i, h in enumerate(hits) if h), None)
     row["MRR"] = 1.0 / (first + 1) if first is not None else 0.0
     row["first_hit_rank"] = first + 1 if first is not None else None
@@ -90,7 +97,7 @@ def evaluate_all(questions: list[dict], retrieve, section_index: dict, page_text
 
 def summarise(rows: list[dict], ks=(1, 3, 5)) -> dict:
     """Mean of each metric over all questions."""
-    keys = [f"P@{k}" for k in ks] + [f"R@{k}" for k in ks] + ["MRR"]
+    keys = [f"S@{k}" for k in ks] + [f"P@{k}" for k in ks] + [f"R@{k}" for k in ks] + ["MRR"]
     keys += [c for c in ("primary@1", "primary@3") if c in rows[0]]
     out = {key: sum(r[key] for r in rows) / len(rows) for key in keys}
     out["n_questions"] = len(rows)
